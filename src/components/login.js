@@ -10,14 +10,17 @@ const Login = ({ onLogin }) => {
   const handleLogin = async () => {
     setError('');
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('http://localhost:8000/api/v2/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({ username, password }),
+        // body: JSON.stringify({ username, password }),
+        body: new URLSearchParams({
+          "username": username,
+          "password": password
+        })
       });
-
       if (response.ok) {
         onLogin(username);
       } else {
