@@ -1,60 +1,37 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import loginGIF from '../images/img2.gif';
 import './Auth.css';
-import loginGIF from '../images/img2.gif'
+import { useAuth } from './hooks/useAuth';
 
-const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = () => {
+    const navigate = useNavigate();
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-  const handleLogin = async () => {
-    setError('');
-    try {
-      const response = await fetch('http://localhost:8000/api/v2/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        // body: JSON.stringify({ username, password }),
-        body: new URLSearchParams({
-          "username": username,
-          "password": password
-        })
-      });
-      if (response.ok) {
-        onLogin(username);
-      } else {
-        const data = await response.json();
-        setError(data.message);
-      }
-    } catch (error) {
-      setError('An error occurred. Please try again.');
-    }
-  };
+    const { login } = useAuth();
+    const handleLogin = async e => {
+        e.preventDefault();
+        try {
+            setError('');
+            await login({ username, password });
+        } catch (error) {
+            setError('Login failed. Please check your credentials.');
+        }
+    };
 
-  return (
-    <div className="auth-container">
-      <img src={loginGIF} alt="Login animation" className="login-gif" />
-      <h1>Something GPT</h1>
-      {error && <div className="error">{error}</div>}
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleLogin}>Login</button>
-      <button onClick={() => onLogin(null, true)}>Signup</button>
-    </div>
-  );
+    return (
+        <div className="auth-container">
+            <img src={loginGIF} alt="Login animation" className="login-gif" />
+            <h1>Login</h1>
+            {error && <div className="error">{error}</div>}
+            <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
+            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+            <button onClick={handleLogin}>Login</button>
+            <button onClick={() => navigate('/sign-up')}>Signup</button>
+        </div>
+    );
 };
 
 export default Login;
-
-// new testing
