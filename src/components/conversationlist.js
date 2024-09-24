@@ -17,11 +17,11 @@ const ConversationList = ({ conversations, currentConversation, onSelectConversa
                         className={conv._id === currentConversation ? 'active' : ''}
                         onClick={() => onSelectConversation(conv._id)} // Select the conversation on click
                     >
-                        Conversation {index + 1} {}
+                        Conversation {index + 1} {/* This will display the thread as "Conversation 1", "Conversation 2"..... */}
                         <FaTrashAlt
                             onClick={e => {
-                                e.stopPropagation(); 
-                                onDeleteConversation(conv._id); 
+                                e.stopPropagation(); // Prevent the click event on delete button from bubbling up to the parent. Otherwise the delete button selects the conversation to be displayed as well as deleting the conversation.
+                                onDeleteConversation(conv._id); // Delete conversation
                             }}
                             className="delete-icon"
                         />

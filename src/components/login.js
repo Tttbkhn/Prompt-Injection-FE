@@ -11,6 +11,7 @@ const Login = () => {
     const [error, setError] = useState('');
 
     const { login } = useAuth();
+
     const handleLogin = async e => {
         e.preventDefault();
         try {
@@ -29,7 +30,7 @@ const Login = () => {
             <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
             <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
             <button onClick={handleLogin}>Login</button>
-            <button onClick={() => navigate('/sign-up')}>Signup</button>
+            <button onClick={() => navigate('/signup')}>Signup</button>
         </div>
     );
 };

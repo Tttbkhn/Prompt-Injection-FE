@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import loginGIF from '../images/img2.gif';
 import './Auth.css';
+import { BASE_URL } from '../util/constant';
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Signup = () => {
         setError('');
         setSuccess('');
         try {
-            const response = await fetch('http://localhost:5000/api/signup', {
+            const response = await fetch(`${BASE_URL}/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -24,8 +25,10 @@ const Signup = () => {
 
             const data = await response.json();
             if (response.ok) {
-                setSuccess('Account created successfully!');
-                setTimeout(() => navigate('/login', { replace: true }), 2000);  // Redirect after 2 seconds
+                setSuccess(data.message);
+                setTimeout(() => {
+                    navigate('/login', { replace: true });
+                }, 2000);
             } else {
                 setError(data.message);
             }
@@ -36,7 +39,7 @@ const Signup = () => {
 
     return (
         <div className="auth-container">
-            <img src={loginGIF} alt="Signup animation" className="login-gif" />
+            <img src={loginGIF} alt="Login animation" className="login-gif" />
             <h1>Create Account</h1>
             {error && <div className="error">{error}</div>}
             {success && <div className="success">{success}</div>}

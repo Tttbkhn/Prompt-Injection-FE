@@ -8,17 +8,17 @@ const Navbar = () => {
     const { logout, user } = useAuth();
 
     const handleLogout = () => {
-        logout();  // Logs out the user and clears session
+        logout();
     };
 
     return (
         <nav className="navbar">
             <div className="navbar-brand" onClick={() => navigate('/')}>
-                <img src={logo} alt="Site Logo" className="navbar-logo" />
+                <img src={logo} alt="site Logo" className="navbar-logo" />
                 <span className="navbar-title">Something GPT</span>
             </div>
             <div className="navbar-buttons">
-                <button onClick={() => navigate('/')}>Home</button>
+                <button onClick={() => navigate('/')}>Home</button> {/*Replace the home button with user's username. Just pull from database*/}
                 {user && <button onClick={() => navigate('/chat')}>Chat</button>}
                 {user && <span className="username-style">{user.username}</span>}
                 {user && (
