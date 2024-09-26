@@ -24,10 +24,12 @@ export const AuthProvider = ({ children }) => {
 
     const login = useCallback(async ({ username, password }) => {
         try {
-            const response = await axios.post(`${BASE_URL}/login`, { username, password });
-
-            if (response?.data?.data?.access_token) {
-                const token = response.data.data.access_token;
+            const response = await axios.post(`${BASE_URL}/auth/login`, new URLSearchParams({
+                username: username,
+                password: password
+            }));
+            if (response?.data?.access_token) {
+                const token = response.data.access_token;
                 setUser(token);
                 navigate('/chat', { replace: true });
             }

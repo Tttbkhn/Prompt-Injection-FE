@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import loginGIF from '../images/img2.gif';
 import './Auth.css';
-import { BASE_URL } from '../util/constant';
+import { BASE_URL } from './util/constant';
 
 const Signup = () => {
     const navigate = useNavigate();
