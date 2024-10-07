@@ -5,7 +5,7 @@ import { useAuth } from './hooks/useAuth';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const { logout, user } = useAuth();
+    const { logout, user, username } = useAuth();
 
     const handleLogout = () => {
         logout();
@@ -20,7 +20,7 @@ const Navbar = () => {
             <div className="navbar-buttons">
                 <button onClick={() => navigate('/')}>Home</button> {/*Replace the home button with user's username. Just pull from database*/}
                 {user && <button onClick={() => navigate('/chat')}>Chat</button>}
-                {user && <span className="username-style">{user.username}</span>}
+                {user && <span className="username-style">Hi, {username}</span>}
                 {user && (
                     <button className="logout-btn" onClick={handleLogout}>
                         Logout

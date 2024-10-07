@@ -10,6 +10,9 @@ import Navbar from './components/navbar';
 import { PrivateRoute } from './components/privateRoute';
 import Signup from './components/signup';
 import TextInput from './components/textinput';
+import { BASE_URL, LOCAL_URL } from './components/util/constant';
+import ForgetPassword from './components/ForgetPassword';
+import ResetPassword from './components/ResetPassword';
 
 const App = () => {
     const [messages, setMessages] = useState([]);
@@ -21,8 +24,14 @@ const App = () => {
     useEffect(() => {
         const fetchConversations = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/conversations?username=${currentUser}`);
+                const response = await fetch(`${BASE_URL}/conversations`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.localStorage.getItem('user').slice(1, -1)}`
+                    },
+                });
                 const data = await response.json();
+                console.log(data)
                 if (data?.length > 0) {
                     setConversations(data);
                 }
@@ -31,16 +40,22 @@ const App = () => {
             }
         };
 
-        if (isAuthenticated && currentUser) {
-            fetchConversations();
-        }
+        // if (isAuthenticated && currentUser) {
+        fetchConversations();
+        // }
     }, [isAuthenticated, currentUser]);
 
     useEffect(() => {
         const fetchChatHistory = async () => {
             if (!currentConversation) return;
             try {
-                const response = await fetch(`http://localhost:5000/api/messages?conversation_id=${currentConversation}`);
+                const response = await fetch(`${BASE_URL}/messages/${currentConversation}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.localStorage.getItem('user').slice(1, -1)}`
+                    },
+
+                });
                 const chatHistory = await response.json();
                 setMessages(chatHistory);
             } catch (error) {
@@ -48,7 +63,8 @@ const App = () => {
             }
         };
 
-        if (isAuthenticated && currentConversation) {
+        // if (isAuthenticated && currentConversation) {
+        if (currentConversation) {
             fetchChatHistory();
         } else {
             setMessages([]); // Ensuring chatbox is empty when no conversation is selected
@@ -58,46 +74,103 @@ const App = () => {
     const sendMessage = async message => {
         if (!currentConversation) {
             try {
-                // Creating a new conversation thread
-                const response = await fetch('http://localhost:5000/api/conversation', {
+                const response = await fetch(`${BASE_URL}/conversations`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.localStorage.getItem('user').slice(1, -1)}`
                     },
-                    body: JSON.stringify({ username: currentUser }),
+                    body: JSON.stringify({ name: "New conversation" }),
                 });
 
                 const data = await response.json();
-                setConversations([...conversations, { _id: data.conversation_id }]);
-                setCurrentConversation(data.conversation_id);
+                setConversations([...conversations, { _id: data._id }]);
+                setMessages([{ text: message, is_bot: false }])
 
                 // Sending the message to the newly created conversation thread
-                const messageResponse = await fetch('http://localhost:5000/api/messages', {
+                // const messageResponse = await fetch(`${BASE_URL}/messages/${data._id}?detection=true`, {
+                const messageResponse = await fetch(`${LOCAL_URL}/messages/${data._id}?detection=true`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.localStorage.getItem('user').slice(1, -1)}`
                     },
-                    body: JSON.stringify({ message, conversation_id: data.conversation_id }),
+                    body: JSON.stringify({ text: message }),
                 });
 
-                const messageData = await messageResponse.json();
-                setMessages(prevMessages => [...prevMessages, { text: message, user: 'user' }, messageData]);
+                // const messageData = await messageResponse.json();
+                // setConversations([...conversations, { _id: messageData.conversaton._id }]);
+                // setCurrentConversation(messageData.conversaton._id);
+                // setMessages(prevMessages => [...prevMessages, { text: message, is_bot: false }, messageData.message]);
+                const reader = messageResponse.body.getReader();
+                let chunks = '';
+
+                let done, value;
+                while (!done) {
+                    ({ value, done } = await reader.read());
+                    if (done) {
+                        return chunks;
+                    }
+                    const strval = new TextDecoder().decode(value)
+                    chunks += strval;
+                    setMessages(prevMessages => {
+                        const updatedMessages = [...prevMessages];
+                        if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].is_bot) {
+                            updatedMessages[updatedMessages.length - 1].text = chunks;
+                            updatedMessages[updatedMessages.length - 1].is_bot = true;
+                        } else {
+                            updatedMessages.push({ text: chunks, is_bot: true });
+                        }
+                        return updatedMessages;
+                    });
+                }
+
+                setCurrentConversation(data._id);
             } catch (error) {
                 console.error('Error creating conversation or sending message:', error);
             }
         } else {
             try {
+                await setMessages(prevMessages => [...prevMessages, { text: message, is_bot: false }])
+
                 // Sending the message to the current conversation thread
-                const response = await fetch('http://localhost:5000/api/messages', {
+                const response = await fetch(`${BASE_URL}/messages/${currentConversation}?detection=true`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.localStorage.getItem('user').slice(1, -1)}`
                     },
-                    body: JSON.stringify({ message, conversation_id: currentConversation }),
+                    body: JSON.stringify({ text: message }),
                 });
 
-                const data = await response.json();
-                setMessages(prevMessages => [...prevMessages, { text: message, user: 'user' }, data]);
+                const reader = response.body.getReader();
+                let chunks = '';
+
+                let done, value;
+                while (!done) {
+                    ({ value, done } = await reader.read());
+                    if (done) {
+                        return chunks;
+                    }
+                    const strval = new TextDecoder().decode(value)
+                    chunks += strval;
+                    console.log(strval)
+                    // await setResponseText((prev) => {
+                    //     return prev + strval
+                    // })
+                    setMessages(prevMessages => {
+                        const updatedMessages = [...prevMessages];
+                        if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].is_bot) {
+                            updatedMessages[updatedMessages.length - 1].text = chunks;
+                            updatedMessages[updatedMessages.length - 1].is_bot = true;
+                        } else {
+                            updatedMessages.push({ text: chunks, is_bot: true });
+                        }
+                        return updatedMessages;
+                    });
+                }
+
+
             } catch (error) {
                 console.error('Error sending message:', error);
             }
@@ -107,17 +180,18 @@ const App = () => {
     // Creating a new conversation thread // For when user clicks "New Conversation" button on the threads panel
     const createNewConversation = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/conversation', {
+            const response = await fetch(`${BASE_URL}/conversations`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${window.localStorage.getItem('user').slice(1, -1)}`
                 },
-                body: JSON.stringify({ username: currentUser }),
+                body: JSON.stringify({ name: "New conversation" }),
             });
 
             const data = await response.json();
-            setConversations([...conversations, { _id: data.conversation_id }]);
-            setCurrentConversation(data.conversation_id);
+            setConversations([...conversations, { _id: data._id }]);
+            setCurrentConversation(data._id);
             setMessages([]); // Reset messages for the new conversation
         } catch (error) {
             console.error('Error creating conversation:', error);
@@ -127,8 +201,11 @@ const App = () => {
     // Deleting a conversation thread
     const deleteConversation = async conversationId => {
         try {
-            await fetch(`http://localhost:5000/api/conversation/${conversationId}`, {
+            await fetch(`${BASE_URL}/conversations/${conversationId}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${window.localStorage.getItem('user').slice(1, -1)}`
+                }
             });
 
             setConversations(conversations.filter(conv => conv._id !== conversationId));
@@ -170,6 +247,8 @@ const App = () => {
                             </PrivateRoute>
                         }
                     />
+                    <Route path='/forget-password' element={<ForgetPassword />} />
+                    <Route path='/reset-password' element={<ResetPassword />} />
                 </Routes>
             </div>
         </AuthProvider>

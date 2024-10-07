@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import helpGif from '../images/img2.gif'; 
+import helpGif from '../images/img2.gif';
 
 const ChatBox = ({ messages = [], currentConversation }) => {
   const chatEndRef = useRef(null);
@@ -39,7 +39,7 @@ const ChatBox = ({ messages = [], currentConversation }) => {
   return (
     <div className="chatbox">
       {messages.map((message, index) => (
-        <div key={index} className={`message ${message.user}`}>
+        <div key={index} className={`message ${message.is_bot}`}>
           {message.text}
         </div>
       ))}

@@ -15,7 +15,11 @@ const ConversationList = ({ conversations, currentConversation, onSelectConversa
                     <li
                         key={conv._id}
                         className={conv._id === currentConversation ? 'active' : ''}
-                        onClick={() => onSelectConversation(conv._id)} // Select the conversation on click
+                        onClick={() => {
+                            if (conv._id !== currentConversation) {
+                                onSelectConversation(conv._id); // Select the conversation
+                            }
+                        }} // Select the conversation on click
                     >
                         Conversation {index + 1} {/* This will display the thread as "Conversation 1", "Conversation 2"..... */}
                         <FaTrashAlt

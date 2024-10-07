@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createContext, useCallback, useContext, useMemo, useEffect } from 'react';
+import { createContext, useCallback, useContext, useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../util/constant';
 import { useLocalStorage } from './useLocalStorage';
@@ -9,10 +9,11 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useLocalStorage('user', null);
     const navigate = useNavigate();
+    const [username, setUsername] = useState('');
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            // Session timeout after 30 minutes
+            // Session timeout after 60 minutes
             if (user) {
                 logout();
                 alert('Session timed out, please log in again.');
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }) => {
                 username: username,
                 password: password
             }));
+            setUsername(username)
             if (response?.data?.access_token) {
                 const token = response.data.access_token;
                 setUser(token);
@@ -47,7 +49,8 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         logout,
-    }), [user, login, logout]);
+        username
+    }), [user, login, logout, username]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
