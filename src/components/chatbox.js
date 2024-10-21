@@ -14,7 +14,7 @@ const ChatBox = ({ messages = [], currentConversation }) => {
 
   // Logic to save file
   const saveChatAsFile = () => {
-    const chatText = messages.map((msg) => `${msg.user}: ${msg.text}`).join('\n');
+    const chatText = messages.map((msg) => `${msg.is_bot ? "Bot" : "User"}: ${msg.text}`).join('\n');
     const blob = new Blob([chatText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
 
@@ -40,7 +40,7 @@ const ChatBox = ({ messages = [], currentConversation }) => {
     <div className="chatbox">
       {messages.map((message, index) => (
         <div key={index} className={`message ${message.is_bot}`}>
-          {message.text}
+          {message.detail ? message.detail : message.text}
         </div>
       ))}
       <div ref={chatEndRef} />

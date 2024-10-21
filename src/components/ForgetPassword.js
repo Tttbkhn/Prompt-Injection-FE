@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BASE_URL, LOCAL_URL } from './util/constant';
 import './Auth.css';
 
 const ForgetPassword = ({ onCodeSent }) => {
@@ -22,7 +23,7 @@ const ForgetPassword = ({ onCodeSent }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://3.107.23.29/api/v2/auth/forgot-password', {
+      const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

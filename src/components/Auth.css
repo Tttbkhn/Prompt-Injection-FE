@@ -33,13 +33,11 @@
 }
 
 .username-style {
-    padding: 10px 20px;
-    margin-bottom: 10px;
-    width: 200px;
-    color: #03969e;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 10px;
+    line-height: 1;
+    margin-right: 30px;
 }
 
 /* button:hover {

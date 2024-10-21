@@ -14,12 +14,21 @@ import { BASE_URL, LOCAL_URL } from './components/util/constant';
 import ForgetPassword from './components/ForgetPassword';
 import ResetPassword from './components/ResetPassword';
 
+const DETECTION = true
+
 const App = () => {
     const [messages, setMessages] = useState([]);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [currentUser, setCurrentUser] = useState('');
     const [conversations, setConversations] = useState([]);
     const [currentConversation, setCurrentConversation] = useState(null);
+
+    const [isSwitchActive, setIsSwitchActive] = useState(false);
+
+    const handleSwitchChange = (event) => {
+        setIsSwitchActive(event.target.checked); // event.target.checked gives true/false based on switch state
+        console.log('Switch is now:', event.target.checked ? 'Active' : 'Inactive');
+    };
 
     useEffect(() => {
         const fetchConversations = async () => {
@@ -89,7 +98,7 @@ const App = () => {
 
                 // Sending the message to the newly created conversation thread
                 // const messageResponse = await fetch(`${BASE_URL}/messages/${data._id}?detection=true`, {
-                const messageResponse = await fetch(`${LOCAL_URL}/messages/${data._id}?detection=true`, {
+                const messageResponse = await fetch(`${BASE_URL}/messages/${data._id}?detection=${isSwitchActive}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -134,7 +143,7 @@ const App = () => {
                 await setMessages(prevMessages => [...prevMessages, { text: message, is_bot: false }])
 
                 // Sending the message to the current conversation thread
-                const response = await fetch(`${BASE_URL}/messages/${currentConversation}?detection=true`, {
+                const response = await fetch(`${BASE_URL}/messages/${currentConversation}?detection=${isSwitchActive}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -143,34 +152,34 @@ const App = () => {
                     body: JSON.stringify({ text: message }),
                 });
 
-                const reader = response.body.getReader();
-                let chunks = '';
+                if (response.ok) {
+                    const reader = response.body.getReader();
+                    let chunks = '';
 
-                let done, value;
-                while (!done) {
-                    ({ value, done } = await reader.read());
-                    if (done) {
-                        return chunks;
-                    }
-                    const strval = new TextDecoder().decode(value)
-                    chunks += strval;
-                    console.log(strval)
-                    // await setResponseText((prev) => {
-                    //     return prev + strval
-                    // })
-                    setMessages(prevMessages => {
-                        const updatedMessages = [...prevMessages];
-                        if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].is_bot) {
-                            updatedMessages[updatedMessages.length - 1].text = chunks;
-                            updatedMessages[updatedMessages.length - 1].is_bot = true;
-                        } else {
-                            updatedMessages.push({ text: chunks, is_bot: true });
+                    let done, value;
+                    while (!done) {
+                        ({ value, done } = await reader.read());
+                        if (done) {
+                            return chunks;
                         }
-                        return updatedMessages;
-                    });
+                        const strval = new TextDecoder().decode(value)
+                        chunks += strval;
+                        // console.log(strval)
+                        // await setResponseText((prev) => {
+                        //     return prev + strval
+                        // })
+                        setMessages(prevMessages => {
+                            const updatedMessages = [...prevMessages];
+                            if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].is_bot) {
+                                updatedMessages[updatedMessages.length - 1].text = chunks;
+                                updatedMessages[updatedMessages.length - 1].is_bot = true;
+                            } else {
+                                updatedMessages.push({ text: chunks, is_bot: true });
+                            }
+                            return updatedMessages;
+                        });
+                    }
                 }
-
-
             } catch (error) {
                 console.error('Error sending message:', error);
             }
@@ -220,7 +229,7 @@ const App = () => {
     return (
         <AuthProvider>
             <div className="app">
-                <Navbar isAuthenticated={isAuthenticated} currentUser={currentUser} />
+                <Navbar isAuthenticated={isAuthenticated} currentUser={currentUser} isSwitchActive={isSwitchActive} handleSwitchChange={handleSwitchChange} />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
